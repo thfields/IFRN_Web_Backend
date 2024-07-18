@@ -1,7 +1,10 @@
 import app from "./src/app.js";
 import dbConnect from './src/config/db.js';
+import dotenv from 'dotenv';
 
-const PORT = process.env.PORT || 3000;
+dotenv.config();
+
+const PORT = process.env.PORT;
 
 dbConnect()
     .then(() => console.log("Conectado ao MongoDB!"))
