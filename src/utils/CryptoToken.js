@@ -12,5 +12,5 @@ export function cryptoPassword(password) {
 
 
 export function generateToken(payload) {
-    return jwt.sign(payload, process.env.SECRET, { expiresIn: 1200 });
+    return jwt.sign(payload, process.env.SECRET, { expiresIn: 120 });
 }

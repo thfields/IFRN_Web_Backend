@@ -1,9 +1,9 @@
 import UserService from '../services/UserService.js';
-import { cryptoPassword } from '../utils/CryptoToken.js'
+import { cryptoPassword, generateToken } from '../utils/CryptoToken.js'
 
 async function login(req, res) {
-    const { email, password } = req.body;
-    const cryptoPassword = cryptoPassword(password);
+    const email = req.body.email;
+    const password = cryptoPassword(req.body.password);
 
     try {
         // Encontrar o usuário pelo email
@@ -14,11 +14,13 @@ async function login(req, res) {
         }
 
         // Verificar se a senha digitada corresponde à senha armazenada
-        if (user.password !== cryptoPassword) {
+        if (user.password !== password) {
             return res.status(401).json({ error: 'Usuário ou senha incorreto' });
         }
 
-        return res.status(200).json({ message: 'Usuário logado com sucesso!' });
+        const token = generateToken({ userId: user._id, email: user.email });
+
+        return res.status(200).json({ message: 'Usuário logado com sucesso!', token: token });
 
     } catch (error) {
         console.error(error);
