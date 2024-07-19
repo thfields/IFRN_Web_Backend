@@ -1,12 +1,18 @@
 import User from '../models/UserModel.js';
 
 class UserService {
+    
+    findLogin(email) {
+        
+        return User.findOne({ email }).exec();
+    }
+
     async find() {
         return await User.find();
     }
 
     async findOne(userId) {
-        const user = await User.findOne({userId: userId});
+        const user = await User.findById(userId);
         if (!user) {
             throw new Error('Usuário não encontrado');
         }
@@ -21,15 +27,15 @@ class UserService {
         if (user.userId) {
             user.finalData = new Date();
         }
-        return await User.findOneAndUpdate({userId: userId}, user, { new: true });
+        return await User.findByIdAndUpdate(userId, user, { new: true });
     }
 
     async delete(userId) {
-        const user = await User.findOne({ userId: userId });
+        const user = await User.findById(userId);
         if (!user) {
             throw new Error('Usuário não encontrado');
         }
-        await User.deleteOne({ userId: userId });
+        await User.deleteOne({ _id: userId });
         return user;
     }
 }

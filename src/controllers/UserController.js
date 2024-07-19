@@ -1,4 +1,31 @@
 import UserService from '../services/UserService.js';
+import { cryptoPassword } from '../utils/CryptoToken.js'
+
+async function login(req, res) {
+    const { email, password } = req.body;
+    const cryptoPassword = cryptoPassword(password);
+
+    try {
+        // Encontrar o usuário pelo email
+        const user = await UserService.findLogin(email);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário ou senha incorreto' });
+        }
+
+        // Verificar se a senha digitada corresponde à senha armazenada
+        if (user.password !== cryptoPassword) {
+            return res.status(401).json({ error: 'Usuário ou senha incorreto' });
+        }
+
+        return res.status(200).json({ message: 'Usuário logado com sucesso!' });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Erro ao buscar usuário' });
+    }
+}
+
 
 async function getUser(_, res) {
     const users = await UserService.find();
@@ -10,17 +37,19 @@ async function getUserByID(req, res) {
 
     try {
         const user = await UserService.findOne(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
         return res.status(200).json(user);
     } catch (error) {
-        if (error.message === 'Usuário não encontrado') {
-            return res.status(404).json({ error: error.message });
-        }
         return res.status(500).json({ error: 'Erro ao buscar usuário' });
     }
 }
 
 async function createUser(req, res) {
-    const { name, email, password } = req.body;
+    const name = req.body.name;
+    const email = req.body.email;
+    const password = cryptoPassword(req.body.password);
 
     try {
         const user = await UserService.create({ name, email, password });
@@ -45,11 +74,11 @@ async function updateUser(req, res) {
 async function deleteUser(req, res) {
     const userId = req.params.userId;
     try {
-        const user = await UserService.delete(userId);
-        return res.status(200).json({ message: 'Usuário deletado com sucesso!'});
+        await UserService.delete(userId);
+        return res.status(200).json({ message: 'Usuário deletado com sucesso!' });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
 }
 
-export { getUser, getUserByID, createUser, updateUser, deleteUser };
+export { login, getUser, getUserByID, createUser, updateUser, deleteUser };
